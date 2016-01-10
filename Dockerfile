@@ -4,7 +4,7 @@ COPY resources/config.json /
 EXPOSE 9000
 
 # If external packages are needed, install them manually. Not needed if installed in the GOPATH
-# RUN go get github.com/fsouza/go-dockerclient && go install github.com/fsouza/go-dockerclient
+RUN go get github.com/fsouza/go-dockerclient && go install github.com/fsouza/go-dockerclient
 WORKDIR src
 RUN go build -o /app/main github.com/josdirksen/slackproxy/slack-proxy.go
 
