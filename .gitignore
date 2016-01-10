@@ -1,0 +1,7 @@
+.idea
+bin
+pkg
+out
+*.iml
+main
+slack-proxy
