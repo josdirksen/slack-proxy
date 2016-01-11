@@ -1,14 +1,16 @@
 {
-    "environments":
-    [
-      {
-        "name":"local",
-        "host":"tcp://192.168.99.100:2376",
-        "tls": true,
-        "path": "/Users/jos/.docker/machine/machines/default",
-        "ca": "ca.pem",
-        "cert": "cert.pem",
-        "key": "key.pem"
-      }
-    ]
+    "docker" : {
+      "environments":
+      [
+        {
+          "name":"local",
+          "host":"tcp://192.168.99.100:2376",
+          "tls": true,
+          "path": "/Users/jos/.docker/machine/machines/eris",
+          "ca": "ca.pem",
+          "cert": "cert.pem",
+          "key": "key.pem"
+        }
+      ]
+  }
 }

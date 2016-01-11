@@ -7,59 +7,25 @@ import (
 	"github.com/fsouza/go-dockerclient"
 	"bytes"
 	"time"
-	"strings"
-	"net/url"
+	"github.com/josdirksen/slackproxy/config"
+	"log"
+	"os"
 )
 
-type CommandHandler interface {
-
-
-
+type DockerHandler struct {
+	config	*config.Configuration
 }
 
-// We don't do much input checking. if we can't parse it, we just fail the command.
-// We expect the post input to look something like this:
-// token=5cLHiZjpWaRDb0fP6ka02XCR&team_id=T0001&team_domain=example&channel_id=C2147483705&channel_name=test&user_id=U2147483697&user_name=Steve&command=/docker&text=local+ps
-type Command struct {
-	Token string
-	Team_id string
-	Team_domain string
-	Channel_id string
-	Channel_name string
-	User_id string
-	User_name string
-	Command string
-	Text string
-	Environment string
-	DockerCommand string
+func NewDockerHandler(configuration *config.Configuration) *DockerHandler {
+	p := new(DockerHandler)
+	p.config = configuration
+	return p
 }
 
-// Parse a key value map with the correct header names to a command
-func NewCommand(kvmap map[string]string) *Command {
-	c := Command{kvmap["token"], kvmap["team_id"], kvmap["team_domain"],
-		kvmap["channel_id"], kvmap["channel_name"], kvmap["user_id"],
-		kvmap["user_name"], kvmap["command"], kvmap["text"],
-		kvmap["Environment"], kvmap["DockerCommand"]}
-	return &c
-}
+func (dh DockerHandler) HandleCommand(cmdToExecute *Command, w http.ResponseWriter) {
+	client := setupDockerClient(cmdToExecute.Environment)
 
-// parse the input to a command
-func ParseInput(input url.Values) *Command {
-	m := make(map[string]string)
-
-	cmdParts := strings.Split(input.Get("text"), " ")
-	m["Environment"] = cmdParts[0]
-	m["DockerCommand"] = cmdParts[1]
-
-	for key, entry := range input {
-		m[key] = entry[0]
-	}
-
-	return NewCommand(m)
-}
-
-func HandleCommand(cmdToExecute *Command, client *docker.Client, w http.ResponseWriter) {
-	switch cmdToExecute.DockerCommand {
+	switch cmdToExecute.SlackCommand {
 	case "ps" : handlePsCommand(client, w)
 	case "imgs" : handleListImagesCommand(client, w)
 	}
@@ -98,4 +64,31 @@ func handlePsCommand(client *docker.Client, w http.ResponseWriter) {
 	}
 
 	io.WriteString(w, buffer.String())
+}
+
+func setupDockerClient(env string) *docker.Client {
+
+	// first get the environment from the config
+	cfg, err := config.GetDockerEnvironmentConfig(env)
+
+	if (err != nil) {
+		println(err)
+		log.Fatal("Can't parse config, exiting")
+		os.Exit(1)
+	}
+
+	if (cfg.Tls) {
+		endpoint := cfg.Host
+		path := cfg.Path
+		ca := fmt.Sprintf("%s/%s", path, cfg.Ca)
+		cert := fmt.Sprintf("%s/%s", path, cfg.Cert)
+		key := fmt.Sprintf("%s/%s", path, cfg.Key)
+
+		client,_ := docker.NewTLSClient(endpoint, cert, key, ca)
+		return client
+	} else {
+		client,_ := docker.NewClient(cfg.Host)
+		return client
+	}
+
 }

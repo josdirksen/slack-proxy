@@ -6,11 +6,8 @@ import (
 	"errors"
 )
 
-// for now fixed client which points to localhost, should move this to
-// external configuration
 var config *Configuration
 
-// TODO: use a nested struct
 type Environment struct {
 	Name 	string
 	Host    string
@@ -21,8 +18,12 @@ type Environment struct {
 	Key 	string
 }
 
-type Configuration struct {
+type Docker struct {
 	Environments    []Environment
+}
+
+type Configuration struct {
+	Docker Docker
 }
 
 func ParseConfig(configFile string) {
@@ -36,8 +37,7 @@ func ParseConfig(configFile string) {
 		fmt.Println("error parsing config: ", err)
 		os.Exit(1);
 	}
-	fmt.Println(configuration.Environments)
-
+	fmt.Println(configuration)
 	config = &configuration
 }
 
@@ -45,9 +45,9 @@ func GetConfig() *Configuration {
 	return config
 }
 
-func GetEnvironmentConfig(Environment string) (*Environment, error) {
+func GetDockerEnvironmentConfig(Environment string) (*Environment, error) {
 
-	for _, env := range config.Environments {
+	for _, env := range config.Docker.Environments {
 		if (env.Name == Environment) {
 			return &env, nil
 		}
