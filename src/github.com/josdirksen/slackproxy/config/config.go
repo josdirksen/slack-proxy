@@ -23,7 +23,8 @@ type Docker struct {
 }
 
 type Configuration struct {
-	Docker Docker
+	Token    string
+	Docker   Docker
 }
 
 func ParseConfig(configFile string) {
