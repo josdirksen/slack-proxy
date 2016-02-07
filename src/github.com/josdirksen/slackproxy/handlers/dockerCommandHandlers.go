@@ -25,10 +25,22 @@ func NewDockerHandler(configuration *config.Configuration) *DockerHandler {
 func (dh DockerHandler) HandleCommand(cmdToExecute *Command, w http.ResponseWriter) {
 	client := setupDockerClient(cmdToExecute.Environment)
 
+	fmt.Printf("%+v\n", cmdToExecute)
+
 	switch cmdToExecute.SlackCommand {
 	case "ps" : handlePsCommand(client, w)
+	case "logs" : handleLogsCommand(client, cmdToExecute, w)
 	case "imgs" : handleListImagesCommand(client, w)
 	}
+}
+
+func handleLogsCommand(client *docker.Client, cmd *Command, w http.ResponseWriter) {
+	var tail = "all"
+	if (len(cmd.OtherArguments) == 2) {
+		tail = cmd.OtherArguments[1]
+	}
+	logoptions := docker.LogsOptions{Container: cmd.OtherArguments[0], Stdout: true, Stderr: true, Follow: false, Tail: tail, OutputStream: w, ErrorStream: w}
+	client.Logs(logoptions)
 }
 
 func handleListImagesCommand(client *docker.Client, w http.ResponseWriter) {

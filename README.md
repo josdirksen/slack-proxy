@@ -5,6 +5,7 @@ This project provides a simple proxy betwee slack and docker. To develop on this
 
 ```
  go get github.com/fsouza/go-dockerclient
+ go get github.com/shirou/gopsutil
 ```
 
 Alternatively you can just use docker to run the application:

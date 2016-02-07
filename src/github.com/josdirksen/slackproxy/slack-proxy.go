@@ -18,7 +18,7 @@ func GetConfigListener(config *config.Configuration) func(http.ResponseWriter, *
 		// now check whether the token is valid
 		if config.Token == cmdToExecute.Token {
 			// execute the command
-			handler := handlers.GetHandler("docker", config)
+			handler := handlers.GetHandler(cmdToExecute.Command, config)
 			handler.HandleCommand(cmdToExecute, w)
 		} else {
 			w.WriteHeader(406)

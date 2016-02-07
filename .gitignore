@@ -5,3 +5,5 @@ out
 *.iml
 main
 slack-proxy
+src/github.com/fsouza/
+src/github.com/shirou/
